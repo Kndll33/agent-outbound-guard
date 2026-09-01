@@ -61,6 +61,43 @@ class GuardTests(unittest.TestCase):
         }
         self.assertIn("duplicate_recipient", {f.code for f in lint(payload)})
 
+    def test_commercial_mode_requires_compliance_metadata(self):
+        payload = {
+            "to": "buyer@example.com",
+            "subject": "offer",
+            "text": "A bounded commercial offer.",
+            "idempotency_key": "commercial-v1",
+        }
+        self.assertIn("missing_commercial_compliance", {f.code for f in lint(payload, commercial=True)})
+
+    def test_commercial_mode_requires_declared_text_in_body(self):
+        payload = {
+            "to": "buyer@example.com",
+            "subject": "offer",
+            "text": "Advertisement. Reply unsubscribe to opt out.",
+            "idempotency_key": "commercial-v2",
+            "compliance": {
+                "sender_postal_address": "123 Example Street, Example City, CA 90000",
+                "opt_out_text": "Reply unsubscribe to opt out.",
+                "advertising_disclosure_text": "Advertisement.",
+            },
+        }
+        self.assertIn("sender_postal_address_not_in_body", {f.code for f in lint(payload, commercial=True)})
+
+    def test_commercial_mode_passes_when_declared_text_is_present(self):
+        payload = {
+            "to": "buyer@example.com",
+            "subject": "offer",
+            "text": "Advertisement.\nA bounded offer.\n123 Example Street, Example City, CA 90000\nReply unsubscribe to opt out.",
+            "idempotency_key": "commercial-v3",
+            "compliance": {
+                "sender_postal_address": "123 Example Street, Example City, CA 90000",
+                "opt_out_text": "Reply unsubscribe to opt out.",
+                "advertising_disclosure_text": "Advertisement.",
+            },
+        }
+        self.assertFalse([f for f in lint(payload, commercial=True) if f.severity == "error"])
+
 
 if __name__ == "__main__":
     unittest.main()

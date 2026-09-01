@@ -11,6 +11,8 @@ It blocks common automation failures before a send:
 - likely API keys, access tokens, and passwords in outbound copy;
 - invalid field types.
 
+Optional `--commercial` mode also blocks a send unless declared physical-postal-address, opt-out, and advertising-disclosure text appears verbatim in the message body. This is a structural guard, not a legal-compliance opinion.
+
 Warnings cover empty or unusually long subjects. Findings can be emitted as JSON for CI or agent workflows.
 
 ## Run
@@ -18,6 +20,7 @@ Warnings cover empty or unusually long subjects. Findings can be emitted as JSON
 ```bash
 python3 agent_outbound_guard.py payload.json
 python3 agent_outbound_guard.py --json payload.json
+python3 agent_outbound_guard.py --commercial --json payload.json
 printf '%s' '{"to":"buyer@example.com","subject":"review","text":"Ready","idempotency_key":"buyer-review-v1"}' | python3 agent_outbound_guard.py -
 printf '%s' '{"to":"buyer@example.com","subject":"review","text":"Ready","headers":{"Idempotency-Key":"buyer-review-v1"}}' | python3 agent_outbound_guard.py -
 ```
@@ -25,6 +28,20 @@ printf '%s' '{"to":"buyer@example.com","subject":"review","text":"Ready","header
 AgentMail sends idempotency as the `Idempotency-Key` HTTP header rather than as a message-body field. For a pre-send check, include it in a `headers` object as shown above. The top-level `idempotency_key` form remains available for linter-only envelopes.
 
 Exit codes: `0` pass, `1` blocked by lint errors, `2` unreadable/invalid JSON.
+
+Commercial mode expects linter-only metadata alongside the send payload:
+
+```json
+{
+  "compliance": {
+    "sender_postal_address": "123 Example Street, Example City, CA 90000",
+    "opt_out_text": "Reply unsubscribe to opt out.",
+    "advertising_disclosure_text": "Advertisement."
+  }
+}
+```
+
+Each declared string must also appear in `subject`, `text`, or `html`. Do not forward the `compliance` object to an email API that rejects unknown fields.
 
 ## Test
 

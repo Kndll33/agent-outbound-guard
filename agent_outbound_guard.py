@@ -46,7 +46,7 @@ def _addresses(value: Any) -> list[str]:
     return []
 
 
-def lint(payload: dict[str, Any]) -> list[Finding]:
+def lint(payload: dict[str, Any], *, commercial: bool = False) -> list[Finding]:
     findings: list[Finding] = []
     recipients: list[str] = []
     for field in ("to", "cc", "bcc"):
@@ -95,6 +95,24 @@ def lint(payload: dict[str, Any]) -> list[Finding]:
             findings.append(Finding("error", "possible_secret", "body may contain a credential or secret"))
             break
 
+    if commercial:
+        compliance = payload.get("compliance")
+        if not isinstance(compliance, dict):
+            findings.append(Finding("error", "missing_commercial_compliance", "commercial mode requires a compliance object"))
+        else:
+            required = {
+                "sender_postal_address": "physical postal address",
+                "opt_out_text": "opt-out text",
+                "advertising_disclosure_text": "advertising disclosure text",
+            }
+            folded_body = combined.casefold()
+            for field, label in required.items():
+                value = compliance.get(field)
+                if not isinstance(value, str) or not value.strip():
+                    findings.append(Finding("error", f"missing_{field}", f"commercial mode requires {label} in compliance.{field}"))
+                elif value.strip().casefold() not in folded_body:
+                    findings.append(Finding("error", f"{field}_not_in_body", f"compliance.{field} must appear verbatim in the message body"))
+
     headers = payload.get("headers", {})
     if headers is None:
         headers = {}
@@ -117,6 +135,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Block unsafe or malformed agent-generated email payloads before send")
     parser.add_argument("payload", nargs="?", help="JSON payload path; omit or use - for stdin")
     parser.add_argument("--json", action="store_true", dest="json_output", help="emit machine-readable JSON")
+    parser.add_argument("--commercial", action="store_true", help="require declared postal-address, opt-out, and advertising-disclosure text to appear in the body")
     args = parser.parse_args()
     try:
         raw = sys.stdin.read() if not args.payload or args.payload == "-" else Path(args.payload).read_text(encoding="utf-8")
@@ -127,7 +146,7 @@ def main() -> int:
         print(json.dumps({"ok": False, "findings": [{"severity": "error", "code": "invalid_json", "message": str(exc)}]}))
         return 2
 
-    findings = lint(payload)
+    findings = lint(payload, commercial=args.commercial)
     errors = [f for f in findings if f.severity == "error"]
     result = {"ok": not errors, "error_count": len(errors), "warning_count": len(findings) - len(errors), "findings": [asdict(f) for f in findings]}
     if args.json_output:
