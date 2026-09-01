@@ -32,6 +32,12 @@ Exit codes: `0` pass, `1` blocked by lint errors, `2` unreadable/invalid JSON.
 python3 -m unittest -v
 ```
 
+## Public compatibility proof
+
+The repository includes an [AgentMail quickstart-shaped request envelope](agentmail-public-quickstart-fixture.json) and its [persisted clean guard result](agentmail-public-quickstart-guard-result.json). The fixture models AgentMail's documented HTTP idempotency header explicitly under `headers.Idempotency-Key`; running it returns exit `0` with no findings, and the full local suite contains six passing tests.
+
+This is a reproducible format-compatibility check only. It is not evidence that AgentMail uses, sponsors, or endorses this project.
+
 ## Scope and safety
 
 This tool only performs local static checks. It does not send messages, validate deliverability, guarantee policy compliance, or replace human/legal review where required. Secret detection is intentionally conservative and may produce false positives.
