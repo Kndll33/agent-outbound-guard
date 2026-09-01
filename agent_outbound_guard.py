@@ -95,9 +95,19 @@ def lint(payload: dict[str, Any]) -> list[Finding]:
             findings.append(Finding("error", "possible_secret", "body may contain a credential or secret"))
             break
 
-    key = payload.get("idempotency_key") or payload.get("Idempotency-Key")
+    headers = payload.get("headers", {})
+    if headers is None:
+        headers = {}
+    if not isinstance(headers, dict):
+        findings.append(Finding("error", "invalid_headers", "headers must be an object when provided"))
+        headers = {}
+    header_key = next(
+        (value for name, value in headers.items() if isinstance(name, str) and name.lower() == "idempotency-key"),
+        None,
+    )
+    key = payload.get("idempotency_key") or payload.get("Idempotency-Key") or header_key
     if not isinstance(key, str) or len(key.strip()) < 8:
-        findings.append(Finding("error", "missing_idempotency_key", "provide a stable idempotency key of at least 8 characters"))
+        findings.append(Finding("error", "missing_idempotency_key", "provide a stable idempotency key of at least 8 characters at top level or in headers.Idempotency-Key"))
     if len(subject) > 120:
         findings.append(Finding("warning", "long_subject", "subject exceeds 120 characters"))
     return findings

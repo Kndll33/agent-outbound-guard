@@ -13,6 +13,25 @@ class GuardTests(unittest.TestCase):
         }
         self.assertFalse([f for f in lint(payload) if f.severity == "error"])
 
+    def test_agentmail_header_idempotency_passes(self):
+        payload = {
+            "to": "recipient@example.com",
+            "subject": "Hello from AgentMail",
+            "text": "Plain text body",
+            "headers": {"Idempotency-Key": "quickstart-send-v1"},
+        }
+        self.assertFalse([f for f in lint(payload) if f.severity == "error"])
+
+    def test_invalid_headers_block(self):
+        payload = {
+            "to": "buyer@example.com",
+            "subject": "test",
+            "text": "body",
+            "headers": ["Idempotency-Key: test-send-v3"],
+        }
+        codes = {f.code for f in lint(payload)}
+        self.assertTrue({"invalid_headers", "missing_idempotency_key"}.issubset(codes))
+
     def test_line_number_placeholder_and_missing_key_block(self):
         payload = {
             "to": "buyer@example.com",

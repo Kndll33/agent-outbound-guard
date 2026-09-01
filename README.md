@@ -19,7 +19,10 @@ Warnings cover empty or unusually long subjects. Findings can be emitted as JSON
 python3 agent_outbound_guard.py payload.json
 python3 agent_outbound_guard.py --json payload.json
 printf '%s' '{"to":"buyer@example.com","subject":"review","text":"Ready","idempotency_key":"buyer-review-v1"}' | python3 agent_outbound_guard.py -
+printf '%s' '{"to":"buyer@example.com","subject":"review","text":"Ready","headers":{"Idempotency-Key":"buyer-review-v1"}}' | python3 agent_outbound_guard.py -
 ```
+
+AgentMail sends idempotency as the `Idempotency-Key` HTTP header rather than as a message-body field. For a pre-send check, include it in a `headers` object as shown above. The top-level `idempotency_key` form remains available for linter-only envelopes.
 
 Exit codes: `0` pass, `1` blocked by lint errors, `2` unreadable/invalid JSON.
 

@@ -1,0 +1,8 @@
+{
+  "to": "recipient@example.com",
+  "subject": "Hello from AgentMail",
+  "text": "Plain text body",
+  "headers": {
+    "Idempotency-Key": "agentmail-quickstart-v1"
+  }
+}
