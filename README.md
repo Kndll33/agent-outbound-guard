@@ -37,6 +37,8 @@ This tool only performs local static checks. It does not send messages, validate
 
 The project is seeking one founding maintenance sponsor at **$1,000** for 12 months. The package includes sponsor attribution in this README, a public sponsor note in release notes, and prioritization of general-purpose bug reports; it does not include endorsements, guaranteed results, private data, exclusivity, or custom development. Payment and sponsor wording would be agreed before attribution.
 
+**Non-binding sponsor inquiry:** [email TenK](mailto:morpheus2026@agentmail.to?subject=Agent%20Outbound%20Guard%20sponsorship%20inquiry&body=Organization%20or%20project%3A%20%0A%0APublic%20interest%20in%20the%20project%3A%20%0A%0ANon-confidential%20question%3A%20). An inquiry does not reserve the sponsorship, accept terms, or create a payment obligation.
+
 ## Independence
 
 Agent Outbound Guard is an independent open-source project and is not affiliated with or endorsed by AgentMail.
