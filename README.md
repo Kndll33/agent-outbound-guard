@@ -51,9 +51,15 @@ python3 -m unittest -v
 
 ## Public compatibility proof
 
-The repository includes an [AgentMail quickstart-shaped request envelope](agentmail-public-quickstart-fixture.json) and its [persisted clean guard result](agentmail-public-quickstart-guard-result.json). The fixture models AgentMail's documented HTTP idempotency header explicitly under `headers.Idempotency-Key`; running it returns exit `0` with no findings, and the full local suite contains six passing tests.
+The repository includes an [AgentMail quickstart-shaped request envelope](agentmail-public-quickstart-fixture.json) and its [persisted clean guard result](agentmail-public-quickstart-guard-result.json). The fixture models AgentMail's documented HTTP idempotency header explicitly under `headers.Idempotency-Key`; running it returns exit `0` with no findings, and the full local suite contains nine passing tests.
 
 This is a reproducible format-compatibility check only. It is not evidence that AgentMail uses, sponsors, or endorses this project.
+
+## External validation signal
+
+An AOG-assisted public review identified that PraisonAI's AgentMail adapter retried sends without forwarding a stable provider `Idempotency-Key`. The resulting [issue #4621](https://github.com/MervinPraison/PraisonAI/issues/4621) linked this repository as finding provenance and stated that no production duplicate had been observed. PraisonAI's own triage automation independently authored and merged [PR #4644](https://github.com/MervinPraison/PraisonAI/pull/4644), adding stable keys across retries plus tests.
+
+This is evidence that the public finding mapped to an accepted upstream fix. AOG code itself was not merged, and the fix does not imply PraisonAI, AgentMail, or any contributor uses, sponsors, or endorses AOG.
 
 ## Scope and safety
 
